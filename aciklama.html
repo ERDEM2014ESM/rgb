@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arduino Kodu</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 30px;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 750px;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        h2 { color: #0078d4; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        p { line-height: 1.6; color: #555; }
+        
+        /* Kod Bloğu Tasarımı */
+        .code-block-wrapper {
+            position: relative;
+            margin-top: 20px;
+        }
+        pre {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Courier New', Courier, monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 0;
+        }
+        
+        /* Kopyalama Butonu */
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .copy-btn:hover {
+            background-color: #555;
+        }
+        
+        .keyword { color: #569cd6; }
+        .comment { color: #6a9955; }
+        .number { color: #b5cea8; }
+        .string { color: #ce9178; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Arduino RGB Led Kontrol Kodu</h2>
+        <p>Aşağıdaki kodu kopyalayarak Arduino IDE uygulamanıza yapıştırabilir ve kartınıza yükleyebilirsiniz.</p>
+        
+        <div class="code-block-wrapper">
+            <button class="copy-btn" id="copyBtn">Kodu Kopyala</button>
+            <pre id="arduinoCode">int brightness1 = 128; 
+int brightness2 = 128; 
+int brightness3 = 128; 
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(9, OUTPUT);  // PWM pin
+  pinMode(10, OUTPUT); // PWM pin
+  pinMode(11, OUTPUT); // PWM pin
+
+  pinMode(7, OUTPUT);
+  digitalWrite(7, LOW);
+
+  Serial.println("LED Parlaklik Kontrolu");
+  Serial.println("Format: B,G,R (orn: 255,128,64)");
+  Serial.println("Komutlar:");
+  Serial.println("  '255,255,255' - Tumunu %100 parlaklik");
+  Serial.println("  '0,0,0' - Tumunu kapat");
+  Serial.println("  '255,0,0' - Sadece ilk LED");
+  Serial.println("  '0,255,0' - Sadece ikinci LED");
+  Serial.println("  '0,0,255' - Sadece ucuncu LED");
+}
+
+void loop() {
+  // Seri porttan yeni parlaklık değerleri gelip gelmediğini kontrol et
+  if (Serial.available() > 0) {
+    // Gelen string'i oku
+    String input = Serial.readStringUntil('\n');
+
+    // Virgülle ayrılmış değerleri parse et
+    int commaIndex1 = input.indexOf(',');
+    int commaIndex2 = input.lastIndexOf(',');
+
+    if (commaIndex1 != -1 && commaIndex2 != -1 && commaIndex1 != commaIndex2) {
+      brightness1 = input.substring(0, commaIndex1).toInt();
+      brightness2 = input.substring(commaIndex1 + 1, commaIndex2).toInt();
+      brightness3 = input.substring(commaIndex2 + 1).toInt();
+
+      // Değerleri 0-255 aralığına sınırla
+      brightness1 = constrain(brightness1, 0, 255);
+      brightness2 = constrain(brightness2, 0, 255);
+      brightness3 = constrain(brightness3, 0, 255);
+
+      Serial.print("Yeni parlaklik degerleri: ");
+      Serial.print(brightness1);
+      Serial.print(", ");
+      Serial.print(brightness2);
+      Serial.print(", ");
+      Serial.println(brightness3);
+    } else {
+      Serial.println("Gecersiz format! Lutfen 'B,G,R' formatinda girin.");
+    }
+  }
+
+  // LED'leri PWM ile kontrol et
+  analogWrite(9, brightness1);   // 9 numaralı pine bağlı LED
+  analogWrite(10, brightness2);  // 10 numaralı pine bağlı LED
+  analogWrite(11, brightness3);  // 11 numaralı pine bağlı LED
+}</pre>
+        </div>
+    </div>
+
+    <script>
+        // Kopyalama fonksiyonu
+        document.getElementById('copyBtn').addEventListener('click', function() {
+            const codeText = document.getElementById('arduinoCode').innerText;
+            navigator.clipboard.writeText(codeText).then(() => {
+                this.textContent = 'Kopyalandı!';
+                this.style.backgroundColor = '#107c41';
+                setTimeout(() => {
+                    this.textContent = 'Kodu Kopyala';
+                    this.style.backgroundColor = '#333';
+                }, 2000);
+            }).catch(err => {
+                console.error('Kopyalama hatası:', err);
+            });
+        });
+    </script>
+</body>
+</html>
